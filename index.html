@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>N-Queen AI Solver — Deepa & Ishika</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page-bg: #eaf6ff;       /* very light blue page background */
+    --card-bg: #ffffff;       /* white card */
+    --muted: #5b6770;         /* muted text */
+    --accent: #0ea5e9;        /* sky blue highlight */
+    --btn: #0369a1;           /* darker sky blue for buttons */
+    --success: #059669;
+    --danger: #dc2626;
+    --grid-white: #ffffff;
+    --grid-black: #0b0b0b;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: linear-gradient(180deg, var(--page-bg), #e6f3fb);
+    color: #0b1b2b;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  .container{
+    max-width:1150px;
+    margin:28px auto;
+    padding:22px;
+  }
+
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:18px;
+  }
+  header h1{
+    margin:0;
+    color:var(--accent);
+    font-weight:700;
+    letter-spacing:0.4px;
+    font-size:1.3rem;
+  }
+  nav{ display:flex; gap:8px; align-items:center; }
+  .nav-btn{
+    background:transparent;
+    border:1px solid rgba(6,30,43,0.06);
+    color:var(--btn);
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .nav-btn:hover{ background:rgba(6,30,43,0.03); transform:translateY(-2px) }
+
+  /* MAIN HOME CARD */
+  .home-card{
+    background: var(--card-bg);
+    padding:26px;
+    border-radius:14px;
+    box-shadow: 0 8px 30px rgba(9,30,45,0.06);
+    border-left:6px solid var(--accent);
+    margin-bottom:20px;
+  }
+  .home-card h2{ margin:0 0 10px 0; color:var(--accent); font-size:1.6rem }
+  .home-card p{ color: #12232F; text-align:justify; line-height:1.75; margin:0; font-size:1rem }
+
+  /* three info boxes */
+  .info-row{ display:flex; gap:14px; margin-top:18px; flex-wrap:wrap; }
+  .info-card{
+    flex:1 1 32%;
+    min-width:230px;
+    background:#f8fcff;
+    border-radius:12px;
+    padding:16px;
+    box-shadow: 0 6px 18px rgba(9,30,45,0.04);
+    border:1px solid rgba(6,30,43,0.03);
+  }
+  .info-card h4{ margin:0 0 8px 0; color:#073b4c; }
+  .info-card p{ margin:0; color:var(--muted); line-height:1.5; font-size:0.95rem }
+
+  /* CTA area */
+  .cta{ display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  .primary-btn{
+    background:var(--btn);
+    color:white;
+    border:none;
+    padding:12px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+  }
+  .secondary-btn{
+    background:transparent;
+    color:var(--btn);
+    border:1px solid rgba(6,30,43,0.06);
+    padding:10px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+  }
+
+  /* PLAY PAGE area (below, separate card) */
+  .card{
+    background: rgb(222, 218, 222);
+    border-radius:12px;
+    padding:18px;
+    margin-top:18px;
+    box-shadow:0 8px 25px rgba(9,30,45,0.04);
+  }
+
+  .controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center; margin-bottom:12px; }
+  input[type=number]{ width:96px; padding:8px; border-radius:8px; border:1px solid rgba(6,30,43,0.06); text-align:center }
+  select{ padding:8px; border-radius:8px; border:1px solid rgba(6,30,43,0.06) }
+
+  #boardContainer{ display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:8px; }
+  #board{ display:grid; border-radius:6px; overflow:hidden; background:transparent; }
+  .cell{ width:56px; height:56px; display:flex; align-items:center; justify-content:center; font-size:32px; user-select:none; cursor:pointer; transition:all .12s }
+  .white{ background:var(--grid-white); color:var(--grid-black); }
+  .black{ background:var(--grid-black); color:var(--grid-white); }
+  .queen{ color:#b45309; text-shadow:0 0 10px rgba(180,83,9,0.12); }
+  .invalid{ background:var(--danger) !important; color:rgb(211, 215, 219) !important; }
+
+  #resultMessage{ margin-top:8px; font-weight:700; display:none; color:var(--btn) }
+
+  /* Learn cards */
+  .learn-grid{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:10px }
+  .video-card{ width:320px; background:#f8fcff; padding:12px; border-radius:12px; text-align:left; border:1px solid rgba(6,30,43,0.03) }
+  .video-card h4{ margin:0 0 6px 0; color:#073b4c }
+  .video-card p{ color:var(--muted); margin:0 0 8px 0 }
+
+  /* modal */
+  .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(2,6,23,0.6); z-index:999; }
+  .modal .modal-body{ width:92%; max-width:900px; background:white; padding:12px; border-radius:8px; }
+
+  /* About page */
+  .about-page{ background:white; padding:18px; border-radius:12px; margin-top:18px; color:#0b1b2b; line-height:1.7; box-shadow:0 8px 25px rgba(9,30,45,0.04) }
+
+  footer{ margin-top:20px; color:var(--muted); font-size:0.95rem; text-align:center; padding-bottom:36px }
+  @media(max-width:880px){
+    .info-row{ flex-direction:column; }
+    .cell{ width:44px; height:44px; font-size:26px }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>♛ N-Queen AI Solver</h1>
+      <nav>
+        <button class="nav-btn" onclick="show('home')">Home</button>
+        <button class="nav-btn" onclick="show('play')">Play</button>
+        <button class="nav-btn" onclick="show('learn')">Learn</button>
+        <button class="nav-btn" onclick="show('about')">About</button>
+      </nav>
+    </header>
+
+    <!-- HOME: big card with justified about content -->
+    <section id="home" class="page">
+      <div class="home-card">
+        <h2>About this Project</h2>
+        <p style="text-align:justify;">
+          This project is a part of our journey in exploring the fascinating world of <strong>Artificial Intelligence</strong>. It demonstrates the implementation of intelligent problem-solving techniques through the <strong>N-Queens Puzzle</strong>, a classic AI problem. The system incorporates multiple AI algorithms such as <strong>Backtracking</strong>, <strong>Hill Climbing</strong>, and <strong>Genetic Algorithm</strong> to find valid solutions for placing N queens on a chessboard so that no two queens attack each other.
+          <br><br>
+          This project has been designed and developed by <strong>Deepa</strong> and <strong>Ishika</strong>, students of the <strong>5th semester</strong>, Artificial Intelligence and Data Science (AIDS) branch at <strong>Yeshwantrao Chavan College of Engineering, Nagpur (YCCE)</strong>.
+          <br><br>
+          The objective of this project is not only to provide a hands-on experience in AI algorithm implementation but also to encourage intuitive understanding through interactive visualization and educational content.
+        </p>
+
+        <!-- three info cards below -->
+        <div class="info-row">
+          <div class="info-card">
+            <h4>What is N-Queen?</h4>
+            <p>The N-Queens problem asks how to place N chess queens on an N×N board so that none can attack another — i.e., no two share a row, column, or diagonal.</p>
+          </div>
+          <div class="info-card">
+            <h4>Its Importance</h4>
+            <p>N-Queens is a classic constraint-satisfaction and combinatorial optimization problem used in teaching search algorithms, heuristics, and metaheuristics in AI courses.</p>
+          </div>
+          <div class="info-card">
+            <h4>Approaches</h4>
+            <p>Common approaches include exact search (Backtracking), local search (Hill Climbing), and population-based search (Genetic Algorithms). This project demonstrates all three.</p>
+          </div>
+        </div>
+
+        <div class="cta">
+          <button class="primary-btn" onclick="show('play')">▶ Play N-Queen</button>
+          <button class="secondary-btn" onclick="show('learn')">🧠 Learn Algorithms</button>
+        </div>
+      </div>
+
+      <!-- small spacer -->
+      <div style="height:18px"></div>
+
+      <!-- Quick overview card -->
+      <div class="card">
+        <h3 style="margin:0 0 8px 0; color:var(--accent)">Project Snapshot</h3>
+        <p style="margin:0; color:var(--muted)">Interactive visualization of N-Queens with three solver strategies, curated learning videos, and an intuitive UI — ideal for demonstrations and learning.</p>
+      </div>
+    </section>
+
+    <!-- PLAY page -->
+    <section id="play" class="page" style="display:none">
+      <div class="card" style="display:flex;flex-direction:column;align-items:center">
+        <div class="controls">
+          <label>Board size (N):</label>
+          <input id="nInput" type="number" min="1" max="20" value="8" />
+          <button class="secondary-btn" onclick="loadBoard()">Load Board</button>
+
+          <label>Algorithm:</label>
+          <select id="algoSelect">
+            <option value="backtracking">Backtracking</option>
+            <option value="hillclimbing">Hill Climbing</option>
+            <option value="genetic">Genetic</option>
+          </select>
+
+          <button class="primary-btn" onclick="autoSolve()">Solve</button>
+          <button class="secondary-btn" onclick="resetBoard()">Reset</button>
+        </div>
+
+        <div id="boardContainer">
+          <div id="board"></div>
+          <div id="resultMessage"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEARN -->
+    <section id="learn" class="page" style="display:none">
+      <div class="card">
+        <h3 style="color:var(--accent); margin:0 0 8px 0">Learn to Solve — curated lectures</h3>
+        <p style="color:var(--muted); margin:0 0 12px 0">Watch curated NPTEL / IIT videos below. Click "Watch Video" to open an embedded player.</p>
+
+        <div class="learn-grid">
+          <div class="video-card">
+            <h4>Backtracking — N-Queens (lecture)</h4>
+            <p>Classic backtracking approach explanation.</p>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="secondary-btn" onclick="openVideo('backtracking')">▶ Watch Video</button>
+              <a href="https://www.youtube.com/watch?v=xFv_Hl4B83A" target="_blank" style="color:var(--accent); margin-left:8px">YouTube</a>
+            </div>
+          </div>
+
+          <div class="video-card">
+            <h4>Hill Climbing / Local Search</h4>
+            <p>Local search and hill-climbing strategies for N-Queens.</p>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="secondary-btn" onclick="openVideo('hill')">▶ Watch Video</button>
+              <a href="https://www.youtube.com/watch?v=tCaYz8fmlpE" target="_blank" style="color:var(--accent); margin-left:8px">YouTube</a>
+            </div>
+          </div>
+
+          <div class="video-card">
+            <h4>Genetic Algorithms</h4>
+            <p>Population-based optimization and GA concepts.</p>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="secondary-btn" onclick="openVideo('genetic')">▶ Watch Video</button>
+              <a href="https://www.youtube.com/watch?v=tTFBz6tbUfU" target="_blank" style="color:var(--accent); margin-left:8px">YouTube</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT standalone page -->
+    <section id="about" class="page" style="display:none">
+      <div class="about-page">
+        <h3 style="color:var(--accent)">About</h3>
+        <p style="text-align:justify;">
+          This project is a part of our journey in exploring the fascinating world of <strong>Artificial Intelligence</strong>. It demonstrates the implementation of intelligent problem-solving techniques through the <strong>N-Queens Puzzle</strong>, a classic AI problem. The system incorporates multiple AI algorithms such as <strong>Backtracking</strong>, <strong>Hill Climbing</strong>, and <strong>Genetic Algorithm</strong> to find valid solutions for placing N queens on a chessboard so that no two queens attack each other.
+        </p>
+        <p style="text-align:justify;">
+          This project has been designed and developed by <strong>Deepa</strong> and <strong>Ishika</strong>, students of the <strong>5th semester</strong>, Artificial Intelligence and Data Science (AIDS) branch at <strong>Yeshwantrao Chavan College of Engineering, Nagpur (YCCE)</strong>.
+        </p>
+        <p style="text-align:justify;">
+          The objective of this project is not only to provide a hands-on experience in AI algorithm implementation but also to encourage intuitive understanding through interactive visualization and educational content.
+        </p>
+      </div>
+    </section>
+
+    <footer>© 2025 — N-Queen AI Project</footer>
+  </div>
+
+  <!-- video modal -->
+  <div id="videoModal" class="modal" onclick="closeVideo()">
+    <div class="modal-body" onclick="event.stopPropagation()">
+      <div style="display:flex;justify-content:flex-end"><button class="nav-btn" onclick="closeVideo()">Close</button></div>
+      <div id="videoHolder" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+<script>
+/* SPA navigation */
+function show(id){
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  document.getElementById(id).style.display='block';
+  if(id==='play') loadBoard();
+  // scroll to top of container for clean view
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+show('home');
+
+/* Board variables */
+let N=8, board=[], userPlaced=[];
+const boardEl = ()=>document.getElementById('board');
+const msgEl = ()=>document.getElementById('resultMessage');
+
+/* load board with validation for N=2 or N=3 */
+function loadBoard(){
+  const input = parseInt(document.getElementById('nInput').value) || 8;
+  if(input===2 || input===3){
+    showMessageFail('❌ N = 2 and N = 3 are not allowed (no solution exists)');
+    return;
+  }
+  N = input;
+  const b = boardEl();
+  b.innerHTML = '';
+  b.style.gridTemplateColumns = `repeat(${N},56px)`;
+  board = Array.from({length:N}, ()=>Array(N).fill(0));
+  userPlaced = Array.from({length:N}, ()=>Array(N).fill(false));
+  for(let r=0;r<N;r++){
+    for(let c=0;c<N;c++){
+      const cell = document.createElement('div');
+      cell.className = 'cell ' + (((r+c)%2===0)?'white':'black');
+      cell.dataset.r = r; cell.dataset.c = c;
+      cell.addEventListener('click', onCellClick);
+      b.appendChild(cell);
+    }
+  }
+  hideMessage();
+}
+
+/* user place/remove */
+function onCellClick(e){
+  const r = parseInt(e.currentTarget.dataset.r);
+  const c = parseInt(e.currentTarget.dataset.c);
+  if(board[r][c]===1){
+    board[r][c]=0; userPlaced[r][c]=false;
+  } else {
+    board[r][c]=1; userPlaced[r][c]=true;
+  }
+  refreshUI(); checkUserSolved();
+}
+
+/* refresh UI and highlight user conflicts */
+function refreshUI(){
+  const cells = boardEl().children;
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    const idx = r*N + c;
+    const cell = cells[idx];
+    cell.textContent = board[r][c] ? '♛' : '';
+    cell.classList.toggle('queen', board[r][c]===1);
+    cell.classList.remove('invalid');
+  }
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    if(userPlaced[r][c] && board[r][c]===1 && isConflicting(r,c)){
+      boardEl().children[r*N+c].classList.add('invalid');
+    }
+  }
+}
+
+/* conflict detection */
+function isConflicting(r,c){
+  for(let i=0;i<N;i++){
+    if(i!==c && board[r][i]===1) return true;
+    if(i!==r && board[i][c]===1) return true;
+  }
+  for(let d=-N; d<=N; d++){
+    if(d===0) continue;
+    let rr=r+d, cc=c+d;
+    if(rr>=0 && rr<N && cc>=0 && cc<N && board[rr][cc]===1) return true;
+    rr=r+d; cc=c-d;
+    if(rr>=0 && rr<N && cc>=0 && cc<N && board[rr][cc]===1) return true;
+  }
+  return false;
+}
+
+/* user solved check */
+function checkUserSolved(){
+  let count=0, conflict=false;
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    if(board[r][c]===1 && userPlaced[r][c]) { count++; if(isConflicting(r,c)) conflict=true; }
+  }
+  if(count===N && !conflict){ showMessageSuccess('🎉 Congrats! You solved it!') }
+  else {
+    const m = msgEl();
+    if(!m.textContent.includes('not allowed')) hideMessage();
+  }
+}
+
+/* messages */
+function hideMessage(){ const m=msgEl(); m.style.display='none'; m.textContent=''; m.style.color=''; }
+function showMessageSuccess(t){ const m=msgEl(); m.style.display='block'; m.textContent=t; m.style.color='var(--success)'; }
+function showMessageFail(t){ const m=msgEl(); m.style.display='block'; m.textContent=t; m.style.color='var(--danger)'; }
+
+/* reset */
+function resetBoard(){ loadBoard(); }
+
+/* solver dispatcher */
+async function autoSolve(){
+  hideMessage();
+  const algo = document.getElementById('algoSelect').value;
+  const input = parseInt(document.getElementById('nInput').value) || N;
+  if(input===2 || input===3){ showMessageFail('❌ N = 2 and N = 3 are not allowed'); return; }
+  if(input !== N) loadBoard();
+  // check user-fixed conflicts
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(userPlaced[r][c]) if(isConflictingWithUser(r,c)){ showMessageFail('❌ Conflicting fixed queens — solver aborted'); return; }
+
+  if(algo==='backtracking') return backtrackingSolve();
+  if(algo==='hillclimbing') return hillClimbSolve();
+  if(algo==='genetic') return geneticSolve();
+}
+
+/* -------- Backtracking (visual) -------- */
+async function backtrackingSolve(){
+  const work = Array.from({length:N}, ()=>Array(N).fill(0));
+  // mark user placements as fixed
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(userPlaced[r][c]) work[r][c]=1;
+
+  function safe(row,col){
+    for(let i=0;i<N;i++) if(work[row][i]===1 && i!==col) return false;
+    for(let i=0;i<N;i++) if(work[i][col]===1 && i!==row) return false;
+    for(let d=-N; d<=N; d++){
+      if(d===0) continue;
+      let rr=row+d, cc=col+d;
+      if(rr>=0&&rr<N&&cc>=0&&cc<N && work[rr][cc]===1) return false;
+      rr=row+d; cc=col-d;
+      if(rr>=0&&rr<N&&cc>=0&&cc<N && work[rr][cc]===1) return false;
+    }
+    return true;
+  }
+
+  async function placeRow(row){
+    if(row===N){
+      for(let r=0;r<N;r++) for(let c=0;c<N;c++) board[r][c]=work[r][c];
+      refreshUI(); return true;
+    }
+    // if fixed queen in this row, skip to next
+    for(let c=0;c<N;c++) if(userPlaced[row][c]) { if(!safe(row,c)) return false; if(await placeRow(row+1)) return true; return false; }
+    for(let col=0; col<N; col++){
+      if(safe(row,col)){
+        work[row][col]=1; applyWork(work); await sleep(70);
+        if(await placeRow(row+1)) return true;
+        work[row][col]=0; applyWork(work); await sleep(30);
+      }
+    }
+    return false;
+  }
+
+  const solved = await placeRow(0);
+  if(solved) showMessageSuccess('✅ Solution Found using Backtracking!');
+  else showMessageFail('❌ Solution Not Found — Algorithm insufficient!');
+}
+
+/* helper: check user conflict among fixed queens */
+function isConflictingWithUser(r,c){
+  for(let i=0;i<N;i++){
+    if(i!==c && userPlaced[r][i] && board[r][i]===1) return true;
+    if(i!==r && userPlaced[i][c] && board[i][c]===1) return true;
+  }
+  for(let d=-N; d<=N; d++){
+    if(d===0) continue;
+    let rr = r + d, cc = c + d;
+    if(rr>=0&&rr<N&&cc>=0&&cc<N && userPlaced[rr][cc] && board[rr][cc]===1) return true;
+    rr = r + d; cc = c - d;
+    if(rr>=0&&rr<N&&cc>=0&&cc<N && userPlaced[rr][cc] && board[rr][cc]===1) return true;
+  }
+  return false;
+}
+
+/* apply work to main board */
+function applyWork(work){
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++) board[r][c]=work[r][c];
+  refreshUI();
+}
+
+/* -------- Hill Climbing (visual) -------- */
+async function hillClimbSolve(){
+  // represent as q[col]=row
+  function buildInitial(){
+    const q = new Array(N);
+    for(let col=0; col<N; col++){
+      let fixedRow=-1;
+      for(let r=0;r<N;r++) if(userPlaced[r][col]) fixedRow=r;
+      q[col] = (fixedRow>=0? fixedRow : Math.floor(Math.random()*N));
+    }
+    return q;
+  }
+  function conflicts(q){
+    let cnt=0;
+    for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+      if(q[i]===q[j] || Math.abs(q[i]-q[j])===Math.abs(i-j)) cnt++;
+    }
+    return cnt;
+  }
+  function qToBoard(q){
+    const w = Array.from({length:N}, ()=>Array(N).fill(0));
+    for(let c=0;c<N;c++) w[q[c]][c]=1;
+    return w;
+  }
+
+  let q = buildInitial();
+  let c = conflicts(q);
+  for(let iter=0; iter<2000 && c>0; iter++){
+    let improved=false;
+    for(let col=0; col<N; col++){
+      // skip fixed columns
+      let fixed=false; for(let r=0;r<N;r++) if(userPlaced[r][col]) fixed=true;
+      if(fixed) continue;
+      let bestRow=q[col], bestC=c;
+      for(let row=0; row<N; row++){
+        let tmp=q.slice(); tmp[col]=row;
+        let newC=conflicts(tmp);
+        if(newC<bestC){ bestC=newC; bestRow=row; }
+      }
+      if(bestRow!==q[col]){ q[col]=bestRow; c=bestC; improved=true; }
+    }
+    applyQueens(q); await sleep(80);
+    if(!improved){
+      // random restart for non-fixed columns
+      for(let col=0; col<N; col++){
+        let fixed=false; for(let r=0;r<N;r++) if(userPlaced[r][col]) fixed=true;
+        if(!fixed) q[col] = Math.floor(Math.random()*N);
+      }
+      c = conflicts(q);
+    }
+  }
+
+  if(c===0){ showMessageSuccess('✅ Solution Found using Hill Climbing!'); return true; }
+  else { showMessageFail('❌ Hill Climbing could not find a solution'); return false; }
+}
+
+/* -------- Genetic Algorithm (visual) -------- */
+async function geneticSolve(){
+  function fitness(q){
+    let count=0;
+    for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+      if(q[i]!==q[j] && Math.abs(q[i]-q[j])!==Math.abs(i-j)) count++;
+    }
+    return count;
+  }
+  function randomQ(){
+    const q = new Array(N);
+    for(let i=0;i<N;i++){
+      let fixedRow=-1;
+      for(let r=0;r<N;r++) if(userPlaced[r][i]) fixedRow=r;
+      q[i] = (fixedRow>=0 ? fixedRow : Math.floor(Math.random()*N));
+    }
+    return q;
+  }
+
+  let population = Array.from({length:60}, ()=>randomQ());
+  const target = N*(N-1)/2;
+  for(let gen=0; gen<1000; gen++){
+    population.sort((a,b)=>fitness(b)-fitness(a));
+    const best = population[0];
+    applyQueens(best); await sleep(60);
+    if(fitness(best)===target){ showMessageSuccess('✅ Genetic Algorithm Solved!'); return true; }
+
+    const parents = population.slice(0,20);
+    const newPop = [];
+    while(newPop.length < population.length){
+      const p1 = parents[Math.floor(Math.random()*parents.length)];
+      const p2 = parents[Math.floor(Math.random()*parents.length)];
+      const cross = Math.floor(Math.random()*N);
+      const child = p1.slice(0,cross).concat(p2.slice(cross));
+      if(Math.random()<0.12){
+        let col = Math.floor(Math.random()*N);
+        let fixed=false; for(let r=0;r<N;r++) if(userPlaced[r][col]) fixed=true;
+        if(!fixed) child[col] = Math.floor(Math.random()*N);
+      }
+      // enforce fixed cols
+      for(let col=0; col<N; col++){
+        for(let row=0; row<N; row++) if(userPlaced[row][col]) child[col]=row;
+      }
+      newPop.push(child);
+    }
+    population = newPop;
+  }
+  showMessageFail('❌ Genetic Algorithm could not find a solution');
+  return false;
+}
+
+/* apply q array to board */
+function applyQueens(q){
+  board = Array.from({length:N}, ()=>Array(N).fill(0));
+  for(let c=0;c<N;c++) board[q[c]][c]=1;
+  refreshUI();
+}
+
+/* helpers */
+function sleep(ms){ return new Promise(res=>setTimeout(res,ms)); }
+
+/* Video modal */
+const videos = {
+  backtracking: "https://www.youtube.com/embed/xFv_Hl4B83A",
+  hill: "https://www.youtube.com/embed/tCaYz8fmlpE",
+  genetic: "https://www.youtube.com/embed/tTFBz6tbUfU"
+};
+function openVideo(key){
+  const modal = document.getElementById('videoModal');
+  const holder = document.getElementById('videoHolder');
+  holder.innerHTML = `<iframe width="100%" height="480" src="${videos[key]}?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  modal.style.display='flex';
+}
+function closeVideo(){
+  const modal = document.getElementById('videoModal');
+  const holder = document.getElementById('videoHolder');
+  holder.innerHTML='';
+  modal.style.display='none';
+}
+
+/* initialize */
+window.addEventListener('load', ()=>{ loadBoard(); });
+</script>
+</body>
+</html>
