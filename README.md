@@ -56,8 +56,6 @@ S . . . .
 . . X . .
 . X . . G
 
-pgsql
-Copy code
 
 ---
 
@@ -75,8 +73,6 @@ The goal is to find the **lowest-cost path** to the destination using **A\*** Se
 [1, X, 1]
 [1, 1, 1]
 
-yaml
-Copy code
 
 ---
 
