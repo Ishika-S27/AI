@@ -1,4 +1,4 @@
-## 🧠 Theory
+## 🧠 N-queens AI solver
 
 The **N-Queen problem** is one of the most fundamental challenges in Artificial Intelligence and computer science.  
 It involves placing *N queens* on an *N×N chessboard* so that no two queens threaten each other — i.e., no two share the same row, column, or diagonal.
@@ -54,4 +54,4 @@ This project bridges **theory and practice**, showing how different AI paradigms
 ### 👩‍💻 Authors
 **Deepa & Ishika**  
 Artificial Intelligence and Data Science (AI & DS)  
-Yeshwantrao Chavan College of Engineering, Nagpur
+Yeshwantrao Chavan College of Engineering 
